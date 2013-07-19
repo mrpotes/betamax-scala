@@ -10,9 +10,4 @@ class WeatherSuite extends FunSuite with Betamax {
     assert(WeatherClient.weatherFor("london,gb").location === "London, GB")
   }
 
-
-//  testWithBetamax("scala-test", Some(TapeMode.READ_ONLY))("weather for london") {
-//    assert(WeatherClient.weatherFor("london,gb").location === "London, GB")
-//  }
-
 }

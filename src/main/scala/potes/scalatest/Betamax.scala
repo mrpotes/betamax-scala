@@ -9,46 +9,28 @@ import scala.runtime.BoxedUnit
 
 trait Betamax {
 
+  private[Betamax]
   class betamax(tape: String, mode: Option[TapeMode])(testFun: => Unit) {
-    def using_:(f: ( => Unit) => Unit) = f(wrapTest(testFun))
-    def wrapTest(f: => Unit) = {
-      def inner = {
-        println("fred")
+    def using_:(f: (=> Unit) => Unit) = {
+      println("Registering test")
+      f {
+        println("Starting Betamax")
         val recorder = new Recorder
         val proxyServer = new ProxyServer(recorder)
         recorder.insertTape(tape)
         recorder.getTape.setMode(mode.getOrElse(recorder.getDefaultMode()))
         proxyServer.start()
         try {
-          f
+          testFun
         } finally {
           recorder.ejectTape()
           proxyServer.stop()
         }
       }
-      inner _
     }
   }
   object betamax {
     def apply(tape: String, mode: Option[TapeMode] = None)(testFun: => Unit) = new betamax(tape, mode)(testFun)
-  }
-
-  protected def test(testName: String, testTags: Tag*)(testFun: => Unit)
-
-  def testWithBetamax(tape: String, mode: Option[TapeMode] = None)(testName: String, testTags: Tag*)(testFun: => Unit) = {
-    test(testName, testTags: _*) {
-      val recorder = new Recorder
-      val proxyServer = new ProxyServer(recorder)
-      recorder.insertTape(tape)
-      recorder.getTape.setMode(mode.getOrElse(recorder.getDefaultMode()))
-      proxyServer.start()
-      try {
-        testFun
-      } finally {
-        recorder.ejectTape()
-        proxyServer.stop()
-      }
-    }
   }
 
 }
